@@ -107,16 +107,16 @@ func getSnowflakeIDBinary() (string, error) {
 }
 
 func main()  {
-	bSnowFrakeID, err := getSnowflakeIDBinary()
+	bSnowFlakeID, err := getSnowflakeIDBinary()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	int64SnowFrakeID, err := strconv.ParseInt(bSnowFrakeID, 2, 64)
+	int64SnowFlakeID, err := strconv.ParseInt(bSnowFlakeID, 2, 64)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("binary:",bSnowFrakeID)
-	fmt.Println("int64 :",int64SnowFrakeID)
+	fmt.Println("binary:",bSnowFlakeID)
+	fmt.Println("int64 :",int64SnowFlakeID)
 }
