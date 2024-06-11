@@ -23,6 +23,10 @@ func padBinary(binaryStr string, binaryLen int) (string, error) {
 	}
 }
 
+func shiftBinary(num int64, shift int64) int64 {
+	return num << shift
+}
+
 func iToB(num int64) string {
 	return strconv.FormatInt(num, 2)
 }
@@ -54,69 +58,50 @@ func getMaxFromBitLen(len int) int {
 	return max
 }
 
-func getTimeStampBinary() (string, error) {
-	timestamp := getUnixMill()
-	bTimeStamp := iToB(timestamp)
-	bTimeStamp, err := padBinary(bTimeStamp, timestampLen)
-	if err != nil {
-		return "", err
-	}
-	return bTimeStamp, nil
+func getTimeStampBinary() int64 {
+	return shiftBinary(getUnixMill(), int64(machineIDLen) + int64(sequenceIDLen))
 }
 
-func getMachineIDBinary() (string, error) {
+func getMachineIDBinary() (int64, error) {
 	machineID, err := getRandomNum(0, int64(getMaxFromBitLen(machineIDLen)))
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	bMachineID := iToB(machineID)
-	bMachineID, err = padBinary(bMachineID, machineIDLen)
-	if err != nil {
-		return "", err
-	}
-	return bMachineID, err
+	return shiftBinary(machineID, int64(sequenceIDLen)), nil
 }
 
-func getSequenceIDBinary() (string, error) {
+func getSequenceIDBinary() (int64, error) {
 	sequenceID, err := getRandomNum(0, int64(getMaxFromBitLen(sequenceIDLen)))
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	bSequenceID := iToB(sequenceID)
-	bSequenceID, err = padBinary(bSequenceID, sequenceIDLen)
-	if err != nil {
-		return "", err
-	}
-	return bSequenceID, err
+	return sequenceID, nil
 }
 
-func getSnowflakeIDBinary() (string, error) {
-	bTimeStamp, err := getTimeStampBinary()
+func getSnowflakeIDBinary() (int64, error) {
+	bTimeStamp := getTimeStampBinary()
+	bMachineID, err := getMachineIDBinary()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	machineID, err := getMachineIDBinary()
+	bSequenceID, err := getSequenceIDBinary()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	sequenceID, err := getSequenceIDBinary()
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("0%s%s%s", bTimeStamp, machineID, sequenceID), nil
+	return bTimeStamp + bMachineID + bSequenceID, nil
 }
 
 func main()  {
-	bSnowFlakeID, err := getSnowflakeIDBinary()
+	int64SnowFlakeID, err := getSnowflakeIDBinary()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	int64SnowFlakeID, err := strconv.ParseInt(bSnowFlakeID, 2, 64)
+	bSnowFlakeID, err := padBinary(iToB(int64SnowFlakeID), 63)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("binary:",bSnowFlakeID)
-	fmt.Println("int64 :",int64SnowFlakeID)
+	fmt.Println("binary:", fmt.Sprintf("0%s", bSnowFlakeID))
+	fmt.Println("int64 :", int64SnowFlakeID)
 }
